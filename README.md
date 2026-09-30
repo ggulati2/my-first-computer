@@ -22,6 +22,24 @@ Download the latest version from the [Releases page](https://github.com/ggulati2
 | **Mac with Apple silicon** (M1 or newer) | `…-macos-arm64.zip` | Unzip it and open `Keybo.app`. The first time, allow it in **System Settings → Privacy & Security → Open Anyway**. |
 | **Linux** | `…-linux-x86_64.tar.gz` | Unpack it and start `Keybo`. Full screen works best with Google Chrome or Edge installed. |
 
+### Why Windows or your Mac shows a warning
+
+Keybo is a small free project and is **not code-signed yet**. Signing costs money every year, and the plan is to add it
+later. Until then, Windows ("protected your PC") and macOS ("cannot be opened") show a warning the first time, for
+every app that is not signed, however harmless. The steps in the table above let you continue.
+
+You do not have to take our word for it. To check that a download is the file built from this source code:
+
+- **Checksum** (easy): download `SHA256SUMS.txt` from the same release page and compare. On a Mac or Linux run
+  `shasum -a 256 <file>`, on Windows run `certutil -hashfile <file> SHA256`. The number must match the line for
+  your file.
+- **Build proof** (for the technical): every file built on GitHub carries a signed build provenance. With the
+  [GitHub CLI](https://cli.github.com) run `gh attestation verify <file> --repo ggulati2/my-first-computer`.
+- **Build it yourself:** the whole source is here, see [Run from source](#run-from-source).
+
+Keybo works offline and has no accounts. A quick look at your firewall or network monitor will show it talking
+to nothing (the only exception is the optional online helper, which is off unless a parent switches it on).
+
 Not sure which Mac you have? Apple menu → **About This Mac**. For an older Intel Mac, see
 [Run from source](#run-from-source) below.
 
