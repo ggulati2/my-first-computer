@@ -1,4 +1,5 @@
 import json
+import sys
 
 import pytest
 
@@ -401,7 +402,9 @@ def test_setup_needs_the_launchers_token_when_there_is_one(tmp_path, monkeypatch
     monkeypatch.setenv("LLM_MODE", "off")
     monkeypatch.setenv("OPENROUTER_API_KEY", "")
     token = setup_token.issue()
-    assert setup_token.read() == token and (tmp_path / "setup-token").stat().st_mode & 0o077 == 0
+    assert setup_token.read() == token
+    if sys.platform != "win32":      # Windows has no Unix permission bits; its data folder is the user's own
+        assert (tmp_path / "setup-token").stat().st_mode & 0o077 == 0
     c = TestClient(create_app(), base_url="http://127.0.0.1:8765")
     body = {"pin": "2468"}
     assert c.post("/api/setup", json=body).status_code == 403
