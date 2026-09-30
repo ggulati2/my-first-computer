@@ -1,6 +1,6 @@
 """The single doorway to the LLM (OpenRouter, or the fake one in mock mode).
 
-Everything that talks to the internet is in this file. Rules:
+Everything that talks to the internet for the child's content is in this file (the parent's update button is backend/updates.py). Rules:
 - Only prompts built by prompts.py go out: no names or personal details.
 - Short timeout, at most two tries (main model, then the fallback model).
 - Every try is written to the llm_usage table, and a daily cap stops runaway use.

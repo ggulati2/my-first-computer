@@ -5,6 +5,7 @@ It serves the frontend files and a few small JSON endpoints under /api.
 """
 import json
 import logging
+import hmac
 import logging.handlers
 import os
 import threading
@@ -17,7 +18,7 @@ from pydantic import BaseModel, Field
 
 from datetime import date
 
-from backend import bank, dashboard, db, diagnostics, difficulty, languages, progress, restore, summary
+from backend import bank, dashboard, db, diagnostics, difficulty, languages, progress, restore, setup_token, summary, updates
 from backend.config import FRONTEND_DIR, LOG_DIR, MISSING_KEY, PORT, load_settings
 from backend.content import ContentService
 from backend.llm.client import LLMClient
@@ -72,6 +73,8 @@ def create_app() -> FastAPI:
     # PARENT_PIN from .env; otherwise the parent is asked to choose one on the first start.
     saved_pin = db.get_settings(family.family_db).get("pin_hash")
     guard = PinGuard(pin=settings.parent_pin or None, stored=saved_pin or None)
+    if guard.has_pin:
+        setup_token.clear()   # set up already: no setup token is needed (backend/setup_token.py)
     llm = LLMClient(settings, state_db=family.family_db)
     content = ContentService(family, llm)
     app = FastAPI(title="Keybo", docs_url=None, redoc_url=None, openapi_url=None)
@@ -340,10 +343,13 @@ def create_app() -> FastAPI:
         daily_reset: bool = False
 
     @app.post("/api/setup")
-    def first_run_setup(body: SetupBody):
+    def first_run_setup(body: SetupBody, x_setup_token: str | None = Header(default=None)):
         """Runs once, on the very first start: the parent chooses a PIN and a few basics."""
         if guard.has_pin:
             raise HTTPException(status_code=409, detail="already set up")
+        wanted = setup_token.expected()    # only when the launcher started us; see backend/setup_token.py
+        if wanted and not hmac.compare_digest((x_setup_token or "").encode(), wanted.encode()):
+            raise HTTPException(status_code=403, detail="setup token missing")
         db.set_setting(family.family_db, "pin_hash", guard.set_pin(body.pin))
         db.set_setting(family.db_path, "language", body.language)
         db.set_setting(family.db_path, "keyboard_layout", languages.default_keyboard(body.language))
@@ -355,6 +361,7 @@ def create_app() -> FastAPI:
             db.set_setting(family.family_db, "daily_reset", "1" if body.daily_reset else "0")
             db.set_setting(family.family_db, "last_reset_day", date.today().isoformat())
             family.add_anonymous(body.class_size - 1, body.language)
+        setup_token.clear()
         return read_settings()
 
     class NewPinBody(BaseModel):
@@ -537,6 +544,12 @@ def create_app() -> FastAPI:
     def parent_diagnostics(_parent: None = Depends(parent_only)):
         """Version, system and the end of the log, with nothing about the child, to paste into a bug report."""
         return {"text": diagnostics.report(llm.status(), len(family.list()), content.language())}
+
+    @app.post("/api/parent/update-check")
+    def update_check(_parent: None = Depends(parent_only)):
+        """Asks GitHub for the newest Keybo version. Only when the parent presses the button (backend/updates.py)."""
+        log.info("Update check requested by the parent")
+        return updates.check(diagnostics.version())
 
     @app.post("/api/parent/llm/test")
     def test_llm(_parent: None = Depends(parent_only)):

@@ -38,7 +38,7 @@ You do not have to take our word for it. To check that a download is the file bu
 - **Build it yourself:** the whole source is here, see [Run from source](#run-from-source).
 
 Keybo works offline and has no accounts. A quick look at your firewall or network monitor will show it talking
-to nothing (the only exception is the optional online helper, which is off unless a parent switches it on).
+to nothing (the only exceptions are the *Check for updates* button, which works only when pressed, and the optional online helper, which is off unless a parent switches it on).
 
 Not sure which Mac you have? Apple menu → **About This Mac**. For an older Intel Mac, see
 [Run from source](#run-from-source) below.
@@ -79,7 +79,8 @@ Tap the small grey ⚙️ and enter your PIN to:
 ### Privacy
 
 - **Nothing leaves your computer.** No accounts, no tracking, no ads. Everything is stored only on this computer.
-- **One optional exception:** an online helper that suggests fresh practice words. It is off unless a parent sets it
+- **Two optional exceptions.** A parent-area button, *Check for updates*, asks GitHub for the newest version number, but only
+  when pressed. And an online helper that suggests fresh practice words. It is off unless a parent sets it
   up with their own key and agrees on a consent screen. Even then it never receives your child's name or anything
   your child typed.
 - Keybo's voice is recorded in advance (AI-generated) and works without internet.

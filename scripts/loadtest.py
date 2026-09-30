@@ -231,7 +231,9 @@ def run() -> dict:
         report: dict = {"startup_seconds": round(server.startup_seconds, 2)}
         try:
             client = httpx.Client(base_url=server.url, timeout=30)
-            client.post("/api/setup", json={"pin": PIN, "language": "en", "daily_limit_minutes": 0}).raise_for_status()
+            token_file = Path(tmp) / "data" / "setup-token"      # the packaged app (APP_BINARY) asks for its setup token
+            setup_headers = {"X-Setup-Token": token_file.read_text().strip()} if token_file.exists() else {}
+            client.post("/api/setup", json={"pin": PIN, "language": "en", "daily_limit_minutes": 0}, headers=setup_headers).raise_for_status()
             token = client.post("/api/parent/verify", json={"pin": PIN}).json()["token"]
             headers = {"X-Parent-Token": token}
             for path in ("mouse", "keyboard", "letters"):

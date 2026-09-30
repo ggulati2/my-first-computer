@@ -107,7 +107,7 @@ def test_the_parent_area_needs_the_pin_everywhere(api):
     client, _ = api
     parent_paths = [("get", "/api/parent/status"), ("get", "/api/parent/dashboard"), ("get", "/api/parent/summary"), ("get", "/api/parent/export"), ("get", "/api/parent/diagnostics"),
                     ("post", "/api/parent/settings"), ("post", "/api/parent/unlock"), ("post", "/api/parent/reset"), ("post", "/api/parent/exit"),
-                    ("post", "/api/parent/import"), ("post", "/api/parent/profiles"), ("post", "/api/parent/pin"), ("post", "/api/parent/llm/test")]
+                    ("post", "/api/parent/import"), ("post", "/api/parent/profiles"), ("post", "/api/parent/pin"), ("post", "/api/parent/llm/test"), ("post", "/api/parent/update-check")]
     for method, path in parent_paths:
         for headers in ({}, {"X-Parent-Token": "made-up"}, {"X-Parent-Token": ""}, {"X-Parent-Token": "' OR '1'='1"}):
             response = getattr(client, method)(path, headers=headers, **({"json": {}} if method == "post" else {}))

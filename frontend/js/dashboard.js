@@ -376,6 +376,16 @@ async function dataTab(body) {
     try { await navigator.clipboard.writeText(data.text); note.textContent = "✓ " + t("dataDiagCopied"); } catch (e) { /* the parent can still copy it by hand */ }
   }
 
+  // "Check for updates": asks the server, which asks GitHub, and only when this button is pressed.
+  const updateBox = el("p", { class: "muted" });
+  async function checkUpdates() {
+    updateBox.textContent = "…";
+    const { body: data } = await api("/api/parent/update-check", { method: "POST", body: "{}" });
+    updateBox.textContent = !data.ok ? "⚠️ " + t("updFail")
+      : data.newer ? "🎁 " + t("updNew").replace("{v}", data.latest).replace("{url}", data.page)
+      : "✓ " + t("updCurrent").replace("{v}", data.current);
+  }
+
   // Both deletions ask for the PIN again (section 6.4); a wrong one leaves everything as it was.
   function askDelete(box, question, yes, path, confirm, onDone) {
     const pin = pinConfirmField();
@@ -431,6 +441,8 @@ async function dataTab(body) {
     el("div", { class: "row" }, el("button", { class: "big-btn blue small-btn", onclick: exportBackup }, "💾 " + t("dataExport")), message),
     el("div", { class: "row" }, el("button", { class: "big-btn blue small-btn", onclick: showDiagnostics }, "🩺 " + t("dataDiag"))),
     diagBox,
+    el("div", { class: "row" }, el("button", { class: "big-btn blue small-btn", onclick: checkUpdates }, "🔄 " + t("updCheck"))),
+    updateBox,
     el("div", { class: "row" }, el("button", { class: "big-btn blue small-btn", onclick: () => fileInput.click() }, "📂 " + t("dataRestore")), fileInput),
     restoreBox,
     el("div", { class: "row" }, el("button", { class: "big-btn small-btn danger", onclick: askReset }, "🗑️ " + t("dataReset"))),

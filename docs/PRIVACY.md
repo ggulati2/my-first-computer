@@ -6,7 +6,7 @@ This file is shown in Keybo's parent area ("Datenschutz" tab). After editing it,
 ## Deutsch
 
 ### Kurz gesagt
-Keybo speichert alles nur auf diesem Computer. Es gibt keine Konten, keine Werbung, keine Statistiken für uns und keine Verbindung ins Internet, solange Sie den Online-Helfer nicht selbst einschalten.
+Keybo speichert alles nur auf diesem Computer. Es gibt keine Konten, keine Werbung, keine Statistiken für uns und keine Verbindung ins Internet, solange Sie nicht selbst den Online-Helfer einschalten oder auf „Nach Updates suchen“ drücken.
 
 ### Was gespeichert wird
 - Pro Kind: der Vorname, ein Bild (Tier oder Symbol), das Lieblingswort, bis zu acht Familienwörter, Ihre eigene Wortliste, die Altersgruppe (5, 6, 7 oder 8+, nie ein Geburtsdatum), Interessen, Sprache, Tastatur und Ihre Zeit-Einstellungen.
@@ -20,6 +20,7 @@ In einem Ordner auf diesem Computer: beim Mac-Programm unter „Library/Applicat
 ### Was den Computer verlässt
 - Standardmäßig: nichts. Keybo antwortet nur Programmen auf diesem Computer.
 - Nur wenn Sie den Online-Helfer selbst einrichten (in der Datei „.env“) und ihn danach im Elternbereich unter „Extra: Online-Helfer“ ausdrücklich einschalten, fragt Keybo bei OpenRouter nach neuen Übungswörtern, Sätzen und kleinen Geschichten. Dabei werden nur ein Thema (zum Beispiel „Tiere“), die Sprache und die schon bekannten Buchstaben geschickt, für den Wochenbericht nur Zahlen, nie ein Name, Familienwort, Alter, Ort oder etwas, das Ihr Kind getippt hat.
+- Nur wenn Sie im Elternbereich unter „Daten“ auf „Nach Updates suchen“ drücken, fragt Keybo bei GitHub nach der neuesten Versionsnummer. Es wird nichts über Ihr Kind oder Ihren Computer geschickt; GitHub sieht wie bei jeder Webseite Ihre IP-Adresse. Ohne Knopfdruck geschieht das nie.
 - Keybos Stimme ist fest eingebaut. Für Sätze ohne Aufnahme (zum Beispiel den Namen Ihres Kindes) nutzt Keybo nur die Stimmen, die auf diesem Computer installiert sind, nie eine Online-Stimme.
 
 ### Löschen
@@ -32,7 +33,7 @@ In einem Ordner auf diesem Computer: beim Mac-Programm unter „Library/Applicat
 ## English
 
 ### In short
-Keybo keeps everything on this computer. There are no accounts, no ads, no statistics for us and no connection to the internet unless you switch on the online helper yourself.
+Keybo keeps everything on this computer. There are no accounts, no ads, no statistics for us and no connection to the internet unless you switch on the online helper or press "Check for updates" yourself.
 
 ### What is stored
 - For each child: the first name, a picture (an animal or symbol), the favourite word, up to eight family words, your own word list, the age group (5, 6, 7 or 8+, never a birthdate), interests, language, keyboard and your time settings.
@@ -46,6 +47,7 @@ In one folder on this computer: for the Mac app in "Library/Application Support/
 ### What leaves this computer
 - By default: nothing. Keybo only answers programs on this computer.
 - Only if you set up the online helper yourself (in the ".env" file) and then switch it on in the parent area under "Extra: online helper", Keybo asks OpenRouter for new practice words, sentences and tiny stories. It sends only a theme (for example "animals"), the language and the letters your child knows, and for the weekly report only numbers, never a name, family word, age, place or anything your child typed.
+- Only if you press "Check for updates" in the parent area under "Data", Keybo asks GitHub for the newest version number. Nothing about your child or this computer is sent; GitHub sees your IP address, as any website does. Without that button press it never happens.
 - Keybo's voice is built in. For sentences without a recording (such as your child's name) Keybo only uses voices installed on this computer, never an online voice.
 
 ### Deleting

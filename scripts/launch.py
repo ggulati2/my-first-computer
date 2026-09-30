@@ -28,12 +28,22 @@ for _name in ("stdout", "stderr"):
 
 import uvicorn  # noqa: E402
 
+from backend import setup_token  # noqa: E402
 from backend.config import FROZEN, HOME_DIR, HOST, PORT  # noqa: E402
 
 # The browser window's own profile lives with the family's data (a user folder in the packaged app).
 BROWSER_PROFILE = HOME_DIR / "data" / "browser-profile"
 
 URL = f"http://{HOST}:{PORT}/"
+
+
+def page_url() -> str:
+    """The address the window opens. While no PIN exists it carries the first-run setup token after the #, which a
+    browser never sends to any server (backend/setup_token.py). In a Chrome or Edge window it can be seen in the
+    program's command line by other users of the same computer, which is why the window of the packaged app
+    (Mac, Windows) is preferred."""
+    token = setup_token.read()
+    return URL + (f"#setup={token}" if token else "")
 
 # Browsers that can open a kiosk (fullscreen, no address bar) window.
 BROWSER_CANDIDATES = [
@@ -117,7 +127,7 @@ def native_window():
 
 def open_native_window(webview) -> None:
     """Shows Keybo fullscreen in the computer's own web view. Blocks until the window is closed."""
-    webview.create_window("Keybo", URL, fullscreen=True, background_color="#BFE9FF")   # Keybo's sky, no white flash
+    webview.create_window("Keybo", page_url(), fullscreen=True, background_color="#BFE9FF")   # Keybo's sky, no white flash
     # Private mode (the default) starts with an empty web view each time: Keybo keeps nothing there, and no old
     # copy of a screen can be shown after an update.
     webview.start()
@@ -130,11 +140,11 @@ def open_kiosk(server=None):
     if browser is None:
         print("Chrome or Edge not found. Opening your normal browser instead.")
         import webbrowser
-        webbrowser.open(URL)
+        webbrowser.open(page_url())
         return None
     # Own profile folder = own browser instance, so we can close it on exit.
     process = subprocess.Popen([
-        browser, f"--user-data-dir={BROWSER_PROFILE}", "--kiosk", f"--app={URL}",
+        browser, f"--user-data-dir={BROWSER_PROFILE}", "--kiosk", f"--app={page_url()}",
         "--no-first-run", "--no-default-browser-check", "--disable-translate",
         "--autoplay-policy=no-user-gesture-required",   # Keybo's recorded voice may speak before the first click
     ])
@@ -162,6 +172,7 @@ def main() -> None:
         else:
             open_kiosk()
         return
+    setup_token.issue()   # before the app is created: it deletes the token again if a PIN exists already
     from backend.app import app  # imported here so a bad .env shows a clear error
 
     config = uvicorn.Config(app, host=HOST, port=PORT, log_level="warning")

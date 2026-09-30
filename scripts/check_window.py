@@ -41,8 +41,8 @@ def use_port(port: str) -> None:
     PORT, URL = port, f"http://127.0.0.1:{port}"
 
 
-def call(path: str, body: dict | None = None, token: str = "") -> dict:
-    headers = {"Content-Type": "application/json", **({"X-Parent-Token": token} if token else {})}
+def call(path: str, body: dict | None = None, token: str = "", extra: dict | None = None) -> dict:
+    headers = {"Content-Type": "application/json", **({"X-Parent-Token": token} if token else {}), **(extra or {})}
     data = json.dumps(body).encode() if body is not None else None
     request = urllib.request.Request(URL + path, data=data, headers=headers, method="POST" if data else "GET")
     with urllib.request.urlopen(request, timeout=10) as answer:   # nosec B310 - a fixed local address
@@ -102,7 +102,8 @@ def check_exit(app: str) -> dict:
     use_port("8798")
     home = tempfile.mkdtemp()
     process = start(app, home)
-    call("/api/setup", {"pin": "2468", "language": "en", "daily_limit_minutes": 0})
+    setup_token = (Path(home) / "data" / "setup-token").read_text().strip()       # the launcher's first-run token
+    call("/api/setup", {"pin": "2468", "language": "en", "daily_limit_minutes": 0}, extra={"X-Setup-Token": setup_token})
     token = call("/api/parent/verify", {"pin": "2468"})["token"]
     time.sleep(5)                                               # the window opens
     still_running = process.poll() is None
