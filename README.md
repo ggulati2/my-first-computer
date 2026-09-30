@@ -4,6 +4,21 @@
 online, in short playful levels with a friendly mascot. It works offline, has no ads and no accounts, and keeps
 everything on your computer. In English, German and Spanish.
 
+<p align="center"><img src="docs/screenshots/demo.gif" alt="Keybo in action: a child plays Letter Land and finds the glowing keys" width="640"></p>
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/map.png" alt="The map with the seven steps and extras"></td>
+    <td><img src="docs/screenshots/game.png" alt="Find the glowing key, with the on-screen keyboard"></td>
+    <td><img src="docs/screenshots/parent.png" alt="The parent area with progress in plain language"></td>
+  </tr>
+  <tr>
+    <td align="center">Seven steps, one skill each</td>
+    <td align="center">Find the glowing key</td>
+    <td align="center">Progress for parents</td>
+  </tr>
+</table>
+
 - [For parents and teachers](#for-parents-and-teachers)
 - [For developers](#for-developers)
 
