@@ -92,7 +92,11 @@ function setupWizard() {
   }
 
   async function finish() {
-    const { body } = await api("/api/setup", { method: "POST", body: JSON.stringify({ ...data, child_name: data.child_name }) });
+    const { status, body } = await api("/api/setup", { method: "POST", body: JSON.stringify({ ...data, child_name: data.child_name }) });
+    if (status !== 200) {   // for example a window opened without the launcher's setup token: starting Keybo again fixes it
+      openModal(el("div", { class: "panel" }, el("p", {}, "⚠️ " + t("setup.restart"))));
+      return;
+    }
     settings = { ...settings, ...body };
     applyLook();
     setupActive = false;

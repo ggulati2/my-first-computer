@@ -402,6 +402,7 @@ body.reduce-motion *, body.reduce-motion *::before { animation: none !important;
 .danger { background: #ff8787; }
 .wide-input { width: min(28em, 60%); max-width: 60%; }
 .settings-grid { display: flex; flex-direction: column; gap: 10px; }
+.diag-text { width: 100%; font: 13px ui-monospace, Menlo, Consolas, monospace; }
 .reset-box p { margin: 6px 0; font-weight: 800; }
 .panel-actions.inline { position: static; padding: 0; }
 

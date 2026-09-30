@@ -23,7 +23,13 @@ body:
       description: Which world and level? Add a screenshot if you can.
     validations: { required: true }
   - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: "In the parent area, open the Data tab and press **Copy diagnostics**, then paste it here. It has no child names or progress."
+      render: text
+  - type: textarea
     id: log
     attributes:
-      label: Anything in logs/app.log
+      label: Anything else from logs/app.log (optional)
       render: text

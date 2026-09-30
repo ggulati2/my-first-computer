@@ -90,7 +90,11 @@ def _start_server(tmp_path, do_setup: bool):
         else:
             raise RuntimeError("the test server did not start")
         if do_setup:
-            request = urllib.request.Request(srv.url + "/api/setup", method="POST", headers={"Content-Type": "application/json"},
+            headers = {"Content-Type": "application/json"}
+            token_file = tmp_path / "home" / "data" / "setup-token"    # the packaged app (APP_BINARY) asks for its setup token
+            if token_file.exists():
+                headers["X-Setup-Token"] = token_file.read_text().strip()
+            request = urllib.request.Request(srv.url + "/api/setup", method="POST", headers=headers,
                                              data=json.dumps({"pin": "2468", "language": "en", "daily_limit_minutes": 0}).encode())
             urllib.request.urlopen(request, timeout=5).read()
         yield srv

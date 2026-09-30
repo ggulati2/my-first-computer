@@ -5,6 +5,8 @@ It serves the frontend files and a few small JSON endpoints under /api.
 """
 import json
 import logging
+import hmac
+import logging.handlers
 import os
 import threading
 from typing import Annotated
@@ -16,7 +18,7 @@ from pydantic import BaseModel, Field
 
 from datetime import date
 
-from backend import bank, dashboard, db, difficulty, languages, progress, restore, summary
+from backend import bank, dashboard, db, diagnostics, difficulty, languages, progress, restore, setup_token, summary, updates
 from backend.config import FRONTEND_DIR, LOG_DIR, MISSING_KEY, PORT, load_settings
 from backend.content import ContentService
 from backend.llm.client import LLMClient
@@ -28,7 +30,9 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    handlers=[logging.FileHandler(LOG_DIR / "app.log", encoding="utf-8"), logging.StreamHandler()],
+    # Rotating: about 3 MB at most (3 old files of 1 MB), so a family's disk never fills up with logs.
+    handlers=[logging.handlers.RotatingFileHandler(LOG_DIR / "app.log", maxBytes=1_000_000, backupCount=3, encoding="utf-8"),
+              logging.StreamHandler()],
 )
 log = logging.getLogger("app")
 
@@ -69,6 +73,8 @@ def create_app() -> FastAPI:
     # PARENT_PIN from .env; otherwise the parent is asked to choose one on the first start.
     saved_pin = db.get_settings(family.family_db).get("pin_hash")
     guard = PinGuard(pin=settings.parent_pin or None, stored=saved_pin or None)
+    if guard.has_pin:
+        setup_token.clear()   # set up already: no setup token is needed (backend/setup_token.py)
     llm = LLMClient(settings, state_db=family.family_db)
     content = ContentService(family, llm)
     app = FastAPI(title="Keybo", docs_url=None, redoc_url=None, openapi_url=None)
@@ -154,6 +160,11 @@ def create_app() -> FastAPI:
         for number in ("session_minutes", "daily_limit_minutes"):
             out[number] = int(stored.get(number) or 0)
         return out
+
+    @app.get("/api/health")
+    def health():
+        """Lets the launcher tell Keybo apart from some other program that holds the port (scripts/launch.py)."""
+        return {"app": "keybo"}
 
     @app.get("/api/languages")
     def list_languages():
@@ -332,10 +343,13 @@ def create_app() -> FastAPI:
         daily_reset: bool = False
 
     @app.post("/api/setup")
-    def first_run_setup(body: SetupBody):
+    def first_run_setup(body: SetupBody, x_setup_token: str | None = Header(default=None)):
         """Runs once, on the very first start: the parent chooses a PIN and a few basics."""
         if guard.has_pin:
             raise HTTPException(status_code=409, detail="already set up")
+        wanted = setup_token.expected()    # only when the launcher started us; see backend/setup_token.py
+        if wanted and not hmac.compare_digest((x_setup_token or "").encode(), wanted.encode()):
+            raise HTTPException(status_code=403, detail="setup token missing")
         db.set_setting(family.family_db, "pin_hash", guard.set_pin(body.pin))
         db.set_setting(family.db_path, "language", body.language)
         db.set_setting(family.db_path, "keyboard_layout", languages.default_keyboard(body.language))
@@ -347,6 +361,7 @@ def create_app() -> FastAPI:
             db.set_setting(family.family_db, "daily_reset", "1" if body.daily_reset else "0")
             db.set_setting(family.family_db, "last_reset_day", date.today().isoformat())
             family.add_anonymous(body.class_size - 1, body.language)
+        setup_token.clear()
         return read_settings()
 
     class NewPinBody(BaseModel):
@@ -524,6 +539,17 @@ def create_app() -> FastAPI:
     @app.get("/api/parent/status")
     def parent_status(_parent: None = Depends(parent_only)):
         return llm.status()
+
+    @app.get("/api/parent/diagnostics")
+    def parent_diagnostics(_parent: None = Depends(parent_only)):
+        """Version, system and the end of the log, with nothing about the child, to paste into a bug report."""
+        return {"text": diagnostics.report(llm.status(), len(family.list()), content.language())}
+
+    @app.post("/api/parent/update-check")
+    def update_check(_parent: None = Depends(parent_only)):
+        """Asks GitHub for the newest Keybo version. Only when the parent presses the button (backend/updates.py)."""
+        log.info("Update check requested by the parent")
+        return updates.check(diagnostics.version())
 
     @app.post("/api/parent/llm/test")
     def test_llm(_parent: None = Depends(parent_only)):

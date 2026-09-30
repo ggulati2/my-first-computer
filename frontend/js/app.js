@@ -9,6 +9,10 @@ let LANGUAGES = [{ code: "en", native: "English", voice: "en-US", keyboard: "qwe
 const languageOptions = () => LANGUAGES.map((l) => [l.code, l.native]);
 
 let muted = false; // the child's quick mute button; lasts until the app is closed
+// The launcher's first-run setup token (#setup=... in the address, backend/setup_token.py). Kept in memory, and
+// taken out of the address bar at once.
+const setupToken = (location.hash.match(/^#setup=([\w-]+)$/) || [])[1] || "";
+if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 let parentToken = null; // set after the correct PIN, kept only in memory
 // The game that is running sets this to receive key presses. It is cleared
 // whenever the screen changes, so a finished game can never react to keys.
@@ -35,6 +39,7 @@ function el(tag, props = {}, ...children) {
 async function api(path, options = {}) {
   const headers = { "Content-Type": "application/json" };
   if (parentToken) headers["X-Parent-Token"] = parentToken;
+  if (setupToken && path === "/api/setup") headers["X-Setup-Token"] = setupToken;
   const res = await fetch(path, { ...options, headers });
   const body = await res.json().catch(() => ({}));
   return { status: res.status, body };

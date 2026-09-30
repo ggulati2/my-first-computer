@@ -6,6 +6,7 @@ Keybo is a children's learning app that runs only on the family's own computer. 
 
 Please **do not open a public issue** for a security problem. Use GitHub's private reporting instead:
 **Security tab → Report a vulnerability** (https://github.com/ggulati2/my-first-computer/security/advisories/new).
+No GitHub account? Email **gourav.mail@gmail.com** with "Keybo security" in the subject. Please do not put details of the problem in a public place.
 
 Include what you did, what you expected, what happened, and your Keybo version (the `VERSION` file). You will get a first answer within a week.
 

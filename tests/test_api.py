@@ -1,4 +1,5 @@
 import json
+import sys
 
 import pytest
 
@@ -377,3 +378,50 @@ def test_left_handed_mouse_setting(client):
     headers = parent_headers(client)
     assert client.get("/api/settings").json()["left_handed"] is False
     assert client.post("/api/parent/settings", json={"left_handed": True}, headers=headers).json()["left_handed"] is True
+
+
+def test_diagnostics_have_the_version_and_log_but_nothing_about_the_child(tmp_path):
+    from pathlib import Path
+
+    from backend import diagnostics
+    from backend.config import HOME_DIR
+    status = {"mode": "off", "key_set": False, "consent": False, "last_error": "", "requests": 0, "cap": 45}
+    text = diagnostics.report(status, 2, "en")
+    assert diagnostics.version() in text and "Last lines of the log" in text
+    assert str(HOME_DIR) not in diagnostics._hide_paths(f"error in {HOME_DIR}/data/app.db")
+    assert str(Path.home()) not in diagnostics._hide_paths(f"{Path.home()}/x")
+
+
+def test_setup_needs_the_launchers_token_when_there_is_one(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from backend import setup_token
+    from backend.app import create_app
+    monkeypatch.setattr(setup_token, "FILE", tmp_path / "setup-token")
+    monkeypatch.setenv("APP_DB_PATH", str(tmp_path / "t.db"))
+    monkeypatch.setenv("PARENT_PIN", "")
+    monkeypatch.setenv("LLM_MODE", "off")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "")
+    token = setup_token.issue()
+    assert setup_token.read() == token
+    if sys.platform != "win32":      # Windows has no Unix permission bits; its data folder is the user's own
+        assert (tmp_path / "setup-token").stat().st_mode & 0o077 == 0
+    c = TestClient(create_app(), base_url="http://127.0.0.1:8765")
+    body = {"pin": "2468"}
+    assert c.post("/api/setup", json=body).status_code == 403
+    assert c.post("/api/setup", json=body, headers={"X-Setup-Token": "guess"}).status_code == 403
+    assert c.get("/api/settings").json()["setup_needed"] is True
+    assert c.post("/api/setup", json=body, headers={"X-Setup-Token": token}).status_code == 200
+    assert setup_token.read() == "" and setup_token.expected() == ""      # gone once a PIN exists
+
+
+def test_a_restart_after_setup_removes_a_stale_token(tmp_path, monkeypatch):
+    from backend import setup_token
+    from backend.app import create_app
+    monkeypatch.setattr(setup_token, "FILE", tmp_path / "setup-token")
+    monkeypatch.setenv("APP_DB_PATH", str(tmp_path / "t.db"))
+    monkeypatch.setenv("PARENT_PIN", "4321")
+    monkeypatch.setenv("LLM_MODE", "off")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "")
+    setup_token.issue()
+    create_app()
+    assert setup_token.read() == "" and setup_token.expected() == ""

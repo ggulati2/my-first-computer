@@ -20,10 +20,29 @@ Download the latest version from the [Releases page](https://github.com/ggulati2
 | **Windows** | `Keybo-Setup-….exe` | Run it. If Windows says it "protected your PC", click **More info**, then **Run anyway**. |
 | **Windows, without installing** | `…-windows-portable.zip` | Unzip it and double-click `Keybo.exe`. |
 | **Mac with Apple silicon** (M1 or newer) | `…-macos-arm64.zip` | Unzip it and open `Keybo.app`. The first time, allow it in **System Settings → Privacy & Security → Open Anyway**. |
+| **Mac with an Intel chip** (older Macs) | `…-macos-x86_64.zip` | Unzip it and open `Keybo.app`. The first time, allow it in **System Settings → Privacy & Security → Open Anyway**. |
 | **Linux** | `…-linux-x86_64.tar.gz` | Unpack it and start `Keybo`. Full screen works best with Google Chrome or Edge installed. |
 
-Not sure which Mac you have? Apple menu → **About This Mac**. For an older Intel Mac, see
-[Run from source](#run-from-source) below.
+Not sure which Mac you have? Apple menu → **About This Mac**: "Chip: Apple M…" means Apple silicon, "Processor: Intel…"
+means an Intel chip.
+
+### Why Windows or your Mac shows a warning
+
+Keybo is a small free project and is **not code-signed yet**. Signing costs money every year, and the plan is to add it
+later. Until then, Windows ("protected your PC") and macOS ("cannot be opened") show a warning the first time, for
+every app that is not signed, however harmless. The steps in the table above let you continue.
+
+You do not have to take our word for it. To check that a download is the file built from this source code:
+
+- **Checksum** (easy): download `SHA256SUMS.txt` from the same release page and compare. On a Mac or Linux run
+  `shasum -a 256 <file>`, on Windows run `certutil -hashfile <file> SHA256`. The number must match the line for
+  your file. (The Intel Mac file is built separately: its line is in `SHA256SUMS-macos-x86_64.txt`.)
+- **Build proof** (for the technical): every file built on GitHub carries a signed build provenance (not the Intel Mac file, which is built by hand). With the
+  [GitHub CLI](https://cli.github.com) run `gh attestation verify <file> --repo ggulati2/my-first-computer`.
+- **Build it yourself:** the whole source is here, see [Run from source](#run-from-source).
+
+Keybo works offline and has no accounts. A quick look at your firewall or network monitor will show it talking
+to nothing (the only exceptions are the *Check for updates* button, which works only when pressed, and the optional online helper, which is off unless a parent switches it on).
 
 ### First start
 
@@ -61,7 +80,8 @@ Tap the small grey ⚙️ and enter your PIN to:
 ### Privacy
 
 - **Nothing leaves your computer.** No accounts, no tracking, no ads. Everything is stored only on this computer.
-- **One optional exception:** an online helper that suggests fresh practice words. It is off unless a parent sets it
+- **Two optional exceptions.** A parent-area button, *Check for updates*, asks GitHub for the newest version number, but only
+  when pressed. And an online helper that suggests fresh practice words. It is off unless a parent sets it
   up with their own key and agrees on a consent screen. Even then it never receives your child's name or anything
   your child typed.
 - Keybo's voice is recorded in advance (AI-generated) and works without internet.
