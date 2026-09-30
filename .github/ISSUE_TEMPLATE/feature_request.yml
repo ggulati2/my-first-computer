@@ -1,0 +1,10 @@
+name: Idea for a new feature
+description: Something Keybo could teach or do
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like Keybo to do?
+      description: Tell us who it is for (age, skills) and why it helps.
+    validations: { required: true }

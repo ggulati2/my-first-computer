@@ -1,0 +1,87 @@
+# Keybo: things to check by hand
+
+The automated tests (`python -m pytest`, and `python -m pytest -m browser` which plays the app in headless Chrome) and the scripted play-throughs cannot hear, feel or watch a child.
+These checks need a person. Tick them off on the computer Keybo will really be used on.
+
+## Sound and voice (2 minutes)
+- [ ] Sounds are pleasant, not too loud, not crackly (tap a balloon, press a key in Letter Land).
+- [ ] The voice reads the instruction at the top of a game. Tap the 🔊 bubble to hear it again.
+- [ ] German: switch the language in the parent area and check a German voice speaks. If it sounds English, install a German voice (macOS: System Settings, Accessibility, Spoken Content, System Voice, Manage Voices).
+- [ ] The 🔊 button next to the gear silences everything and shows 🔇; tapping again brings sound back.
+
+## Real keyboard and mouse (5 minutes)
+- [ ] Letter Land: type the big letter on the real keyboard. Caps Lock on or off makes no difference.
+- [ ] A wrong key only wiggles and points at the right key. No red, no buzzer.
+- [ ] Space, Enter, Backspace and Shift games react to the real keys.
+- [ ] Mouse Meadow with your trackpad or mouse: pop balloons, drag shapes, double-click an egg (is the speed forgiving?), scroll to the treasure with two fingers or the wheel.
+- [ ] Word Woods and Sentence Sky: type a whole sentence. The keys feel instant.
+- [ ] Paint Place: press, hold and move with the real mouse or trackpad draws a line; the colours, brush sizes, stamps and Undo work; a trackpad tap-and-drag also paints.
+- [ ] Desktop Dock: double-click with the trackpad opens the file (a slow double-click only wiggles it); dragging works with the trackpad.
+- [ ] Internet Island: nothing on it loads from the internet (turn Wi-Fi off and it still works); the pop-up lessons read aloud.
+- [ ] Robot Helper: the robot walks one step at a time and returns to the start when the program is wrong.
+- [ ] Free Play: type `cat`, press Enter. Try a word that is not known: the letters dance.
+
+## Spanish (5 minutes, ideally with a Spanish speaker)
+- [ ] Parent area, Settings: choose Español. The screens, the spoken instructions and the mascot speak Spanish. If the voice sounds English, install a Spanish voice (macOS: Spoken Content, Manage Voices, Mónica or Jorge).
+- [ ] Word Woods and Sentence Sky: words and sentences are correct, natural Spanish for a 6-year-old. Note anything that sounds odd or unfriendly.
+- [ ] The Ñ key sits next to L. Words with accents (león, camión) are typed with the plain vowel key.
+- [ ] Free Play: type "leon", "avion", "piña": the pictures appear.
+
+## Bonus levels (5 minutes)
+- [ ] Word Woods, Sentence Sky and Letter Land show a ✨ Bonus row. Play one bonus level in each. The longer words fit on the screen and are read aloud.
+- [ ] Bonus levels are optional: finishing a world is still only about the normal levels.
+
+- [ ] Keyboard Kingdom bonus: the arrow keys move the bunny. The Caps Lock game works with the real Caps Lock key (its light on the keyboard switches on and off; press it a last time to leave it off).
+- [ ] Computer Cove bonus lessons: the touchpad lesson matches how his trackpad or mouse really works.
+
+## German (with a German speaker, 5 minutes)
+- [ ] German, QWERTZ keyboard: the Bonus rows show extra levels (Word Woods 11 and 12, Sentence Sky 9 and 10, Letter Land 9, Computer Cove 11 and 12). Play the umlaut level with the real Ä, Ö, Ü and ß keys.
+- [ ] The words and sentences about Germany and the festivals are correct and natural. The 112 / 110 lesson matches what you want your child to learn.
+- [ ] In English or Spanish these levels do not appear.
+
+## Number Land (3 minutes)
+- [ ] Play Number Land with the row of digits above the letters: it works.
+- [ ] On a computer with a real number pad: switch on *This computer has a number pad* in Settings. The digit row now gets a hint and the pad keys count. Try all six games (count the animals, add up, the rocket countdown).
+- [ ] The numbers are read aloud one digit at a time ("one two three").
+
+## The Mac app (5 minutes)
+- [ ] Double-click `dist/Keybo.app`: Keybo opens fullscreen with the fox icon in the Dock. (Stop the `start.command` version first.)
+- [ ] First start shows the setup screens; after quitting and reopening, progress is still there.
+- [ ] Exit from the parent area quits the app; so does closing the window with Cmd+Q. No Terminal window appears at any point.
+- [ ] Data is in `~/Library/Application Support/Keybo`. Replacing the app with a new build keeps it.
+
+## Fullscreen and accidental exits (3 minutes)
+- [ ] Double-click the start file: Keybo opens fullscreen with no address bar.
+- [ ] Try Cmd+W (Ctrl+W), Cmd+R (F5), Esc, Tab, Alt+F4 while playing. Keybo stays open. (Cmd+Q and Alt+F4 may still close the window on some systems; if so, double-click the start file again: progress and the daily limit are kept.)
+- [ ] The gear opens the parent area only with the PIN. Exit Keybo needs the PIN too.
+- [ ] Closing from the parent area also closes the Terminal window's server (the window says the server stopped).
+
+## First start on a clean computer (10 minutes)
+- [ ] Unzip, double-click the start file. First start installs (needs internet once), then the setup screens appear: language, PIN twice, name, daily limit.
+- [ ] Quit, switch off Wi-Fi, start again. Keybo still opens and plays.
+- [ ] Double-click the start file a second time while Keybo runs: it just opens the window again.
+- [ ] Windows: `start.bat`. Linux: `./start.sh`. (Only macOS was run during development.)
+
+## Limits (3 minutes)
+- [ ] In Settings choose "Suggest a break after 5 min" and a daily limit of 30 min. After play, Keybo suggests a break; "keep playing" gives 5 more minutes.
+- [ ] Reach the daily limit (use a very short limit to try it). The goodnight screen cannot be closed by clicking or by keys. The PIN opens the parent area, where the limit can be lifted.
+
+## Several children (5 minutes)
+- [ ] Parent area, Children tab: add a second child with a picture. Start Keybo again: the big "Who is playing?" pictures appear.
+- [ ] Each child sees only their own stars, stickers and settings. Language and limits can differ.
+- [ ] Set one child's daily limit very low and reach it: the goodnight screen has a 👥 button and the other child can still play.
+- [ ] Removing a child asks first, and cannot remove the last one.
+
+## Backup and restore (3 minutes)
+- [ ] Data tab: save a backup, then reset a child's progress, then restore the file. Stars, stickers and settings come back.
+- [ ] Restore the same file as a new child on the Children tab: a second child appears with the same progress.
+- [ ] Try restoring some other JSON file (for example a photo's name changed to .json): Keybo says it is not a Keybo backup and changes nothing.
+
+## With your child (15 minutes, most important)
+- [ ] He starts and finishes a game without help and without reading.
+- [ ] He is not frustrated by a wrong key. He understands what to do next.
+- [ ] Nothing is too fast, too loud or too scary. Note what he asks for or clicks that does nothing.
+- [ ] The sounds and animations feel fun, not overwhelming. If they do, turn animations off in Settings.
+- [ ] Are the letters and text big enough from where he sits? Use *Text size* in Settings.
+
+Write down anything odd (a screenshot helps) and send it to the developer.

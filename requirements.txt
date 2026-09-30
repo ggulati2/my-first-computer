@@ -1,0 +1,14 @@
+# Exact versions that the automatic tests pass with (Python 3.11 to 3.13).
+# Pinned on purpose: every family gets the same versions we tested, and a surprise upstream
+# release cannot break a fresh install. Dependabot proposes bumps as pull requests, and the
+# CI pipeline has to pass before one is merged. (Their own dependencies, such as starlette,
+# are chosen by pip within the ranges these packages allow.)
+fastapi==0.141.1
+uvicorn==0.53.0
+pydantic==2.13.5
+httpx==0.28.1
+jsonschema==4.26.0
+# The computer's own app window (scripts/launch.py): Mac and Windows. Linux keeps the Chrome/Edge window for now.
+pywebview==6.2.1; sys_platform == "darwin" or sys_platform == "win32"
+# Reads your own OpenRouter key from the computer's keychain (backend/config.py, scripts/set_api_key.py).
+keyring==25.7.0

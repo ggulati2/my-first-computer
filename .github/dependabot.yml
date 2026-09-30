@@ -1,0 +1,17 @@
+# Keeps the pipeline's actions and the Python packages up to date by opening pull requests, once a week.
+# Actions are pinned to commit SHAs; Dependabot updates the SHA and the version comment together.
+# After a Python bump, run scripts/lock.sh on the pull request (CI's "lockfile" check says so) and push.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    commit-message: { prefix: "ci" }
+    groups:
+      actions: { patterns: ["*"] }
+  - package-ecosystem: pip
+    directory: /
+    schedule: { interval: weekly }
+    commit-message: { prefix: "build" }
+    groups:
+      python-packages: { patterns: ["*"] }

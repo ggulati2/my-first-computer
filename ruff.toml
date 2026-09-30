@@ -1,0 +1,6 @@
+# Lint for the pre-commit hook and CI: real mistakes only (syntax errors, undefined names, unused imports).
+# Style is left to the code's own conventions (see CONTRIBUTING.md).
+extend-exclude = ["frontend", "content"]
+
+[lint]
+select = ["E9", "F"]

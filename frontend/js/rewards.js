@@ -1,0 +1,128 @@
+// Progress, stars, stickers, the celebration screen and the sticker album.
+// The rules (what earns a sticker, what unlocks) live on the server; this file
+// only asks for the state and draws it.
+
+let progress = null;       // latest state from /api/progress
+let stickerCatalog = [];   // all stickers, from /api/stickers
+
+async function loadProgress() {
+  const [p, c] = await Promise.all([api("/api/progress"), api("/api/stickers")]);
+  progress = p.body;
+  stickerCatalog = c.body;
+}
+
+const stickerById = (id) => stickerCatalog.find((s) => s.id === id);
+const stickerName = (s) => s.name[settings.language] || s.name.en || Object.values(s.name)[0];
+
+// A sticker made for some languages only (the German ones) is shown in those languages, or if it was already earned.
+const stickerVisible = (s, earned) => !s.langs || s.langs.includes(settings.language) || earned.has(s.id);
+
+// Save a finished level, then show the celebration. `next` runs when the child taps ▶.
+async function completeLevel(world, level, next) {
+  const serial = screenSerial;
+  const stagesBefore = doneStages();
+  const { status, body } = await api("/api/progress/complete", {
+    method: "POST", body: JSON.stringify({ world, level, stars: 3 }),
+  });
+  if (status !== 200) throw new Error("could not save progress");
+  await loadProgress();
+  // Saved either way (the child did finish), but if Home was pressed meanwhile the celebration must not pop up
+  // on top of the home screen.
+  if (serial !== screenSerial) return;
+  next = adventureNext(world, level, next);            // during today's adventure, "next" goes on with it (extras.js)
+  const newStage = STAGES.find((stage) => stageDone(stage) && !stagesBefore.has(stage.key));
+  if (newStage) stageParty(newStage.key, body.new_stickers, next); else celebrate(body.new_stickers, next);
+}
+
+// Falling emoji confetti. Purely decoration, so it is removed after a few seconds.
+function confetti() {
+  const layer = el("div", { class: "confetti" });
+  const bits = ["⭐", "🎉", "✨", "🎈", "💛"];
+  for (let i = 0; i < 28; i++) {
+    const bit = el("span", {}, bits[i % bits.length]);
+    bit.style.left = Math.random() * 100 + "%";
+    bit.style.animationDelay = Math.random() * 1.2 + "s";
+    bit.style.fontSize = 24 + Math.random() * 28 + "px";
+    layer.append(bit);
+  }
+  setTimeout(() => layer.remove(), 5000);
+  return layer;
+}
+
+function celebrate(newStickerIds, next) {
+  const stars = el("div", { class: "stars" }, "⭐⭐⭐");
+  const nodes = [el("h1", { class: "title" }, t("levelDone")), stars];
+  const stickers = newStickerIds.map(stickerById).filter(Boolean);
+  for (const s of stickers) {
+    nodes.push(el("div", { class: "sticker-pop" }, el("span", { class: "sticker-emoji" }, s.emoji),
+      el("span", {}, stickerName(s))));
+  }
+  const cheer = el("div", { class: "bubble" }, "\u00a0"); // Keybo's own line, filled in below
+  nodes.push(cheer, el("div", { class: "mascot-garden-note" }, "🌱 " + t("garden.grew")),   // every level plants a flower (extras.js)
+    el("button", { class: "big-btn play-btn", onclick: () => { sfx("play"); next(); } }, "▶"));
+  setScreen("celebrate", ...nodes);
+  $("#screen").append(confetti());
+  sfx(stickers.length ? "sparkle" : "success");
+  setTimeout(() => sfx("success"), 350);
+  // The line comes from the cache (or the built-in bank), so it arrives instantly.
+  const serial = screenSerial;
+  mascotLine("success").then((line) => {
+    if (serial !== screenSerial) return;   // the child already pressed Home
+    cheer.textContent = line || t("levelDone");
+    speak(stickers.length ? t("newSticker") : cheer.textContent);
+  });
+}
+
+function albumScreen() {
+  const earned = new Set(progress.stickers);
+  const grid = el("div", { class: "album" });
+  for (const s of stickerCatalog.filter((sticker) => stickerVisible(sticker, earned))) {
+    const got = earned.has(s.id);
+    grid.append(el("div", { class: "album-slot" + (got ? " got" : "") },
+      el("span", { class: "sticker-emoji" }, got ? s.emoji : "❔"),
+      el("span", {}, got ? stickerName(s) : t("stickerLocked"))));
+  }
+  setScreen("album", el("h1", { class: "title" }, "📖 " + t("album")), grid);
+  speak(t("album"));
+}
+
+// Bonus levels: extra levels after the core ones of a world. They give stars and stickers but never
+// change what is unlocked (the server counts only the core levels). `langs` shows a level only for
+// some languages, `when` can require something else (for example a key on the keyboard).
+// The numbers must match BONUS_LEVELS in backend/progress.py.
+const BONUS = {
+  keyboard: [{ level: 6, icon: "🐰" }, { level: 7, icon: "🔠" }],
+  basics: [{ level: 7, icon: "☝️" }],
+  safety: [{ level: 7, icon: "🚒", langs: ["de"] }, { level: 8, icon: "🚦", langs: ["de"] }],
+  letters: [{ level: 6, icon: "🔝" }, { level: 7, icon: "⬇️" }, { level: 8, icon: "🔠" },
+    { level: 9, icon: "Ä", langs: ["de"], when: () => layoutHas("ß") }],          // umlauts and ß need the German keyboard
+  words: [{ level: 6, icon: "🐘" }, { level: 7, icon: "🐾" }, { level: 8, icon: "🚀" }, { level: 9, icon: "🦖" }, { level: 10, icon: "🚗" },
+    { level: 11, icon: "🥨", langs: ["de"] }, { level: 12, icon: "🎄", langs: ["de"] },
+    { level: 13, icon: "🌍" }, { level: 14, icon: "🍕" }, { level: 15, icon: "🦓" },
+    { level: 16, icon: "📝", when: () => !!settings.custom_words }],                // the parent's own word list
+  sentences: [{ level: 4, icon: "🦜" }, { level: 5, icon: "❓" }, { level: 6, icon: "💛" },
+    { level: 7, icon: "🏰", langs: ["de"] }, { level: 8, icon: "🎃", langs: ["de"] },
+    { level: 9, icon: "🗺️" }, { level: 10, icon: "🍰" }, { level: 11, icon: "🐪" }],
+};
+const bonusLevels = (world) => (BONUS[world] || []).filter((b) => (!b.langs || b.langs.includes(settings.language)) && (!b.when || b.when()));
+
+// The row of level cards for a world, then its bonus levels (if any).
+// `extra` is an optional element shown under the title.
+async function levelPicker(worldId, icon, levelIcons, run, extra = null) {
+  await loadProgress();
+  const stars = progress.worlds[worldId].levels;
+  const card = (levelIcon, level, cls = "") => {
+    const earned = stars[level] || 0;
+    return el("button", { class: "world level" + cls, onclick: () => { sfx("tap"); reopenPicker = () => levelPicker(worldId, icon, levelIcons, run, extra); run(level); } },
+      el("span", { class: "icon" }, levelIcon),
+      el("span", { class: "stars" }, earned ? "⭐".repeat(earned) : "☆☆☆"));
+  };
+  const cards = levelIcons.map((levelIcon, i) => card(levelIcon, i + 1));
+  const bonus = bonusLevels(worldId).map((b) => card(b.icon, b.level, " bonus"));
+  const nodes = [el("h1", { class: "title" }, `${icon} ${t("world." + worldId)}`)];
+  if (extra) nodes.push(extra);
+  nodes.push(el("div", { class: "worlds" + (cards.length + bonus.length > 8 ? " many" : "") }, ...cards,
+    ...(bonus.length ? [el("div", { class: "bonus-label" }, "✨ " + t("bonus"))] : []), ...bonus));
+  setScreen(worldId, ...nodes);
+  speak(t("world." + worldId));
+}

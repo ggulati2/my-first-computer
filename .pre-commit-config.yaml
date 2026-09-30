@@ -1,0 +1,28 @@
+# Checks that run on your computer before each commit:  pip install pre-commit && pre-commit install
+# Every hook is pinned to an exact commit (the version is in the comment); Dependabot does not update these, so run
+# `pre-commit autoupdate --freeze` now and then.
+repos:
+  # No secrets in commits (API keys, tokens, private keys). The same scan runs in CI.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e  # frozen: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  # Basic file checks. None of them change your files, they only stop the commit.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-json
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+
+  # Python: real mistakes only (ruff.toml).
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: a56c0b927e6465d37cae3e97d35d4d18ab2b96cd  # frozen: v0.16.9
+    hooks:
+      - id: ruff-check

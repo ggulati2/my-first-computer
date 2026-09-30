@@ -1,0 +1,11 @@
+{
+  "id": "family-words",
+  "version": "1.0.0",
+  "languages": ["en", "de", "es"],
+  "age_range": [5, 8],
+  "licence": "generated locally; never written to disk, never shared",
+  "author": "generated from the family's own settings",
+  "generated": true,
+  "description": "The child's own name, family words (up to eight: Mama, Papa, a sibling, a pet...) and favourite word, set by a parent (docs/DESIGN.md section 6.1). They are settings used only in the browser (frontend/js/name.js) and never sent to the LLM. There are no files: nothing here is ever written to disk.",
+  "files": {}
+}
