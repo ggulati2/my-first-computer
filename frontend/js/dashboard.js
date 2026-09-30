@@ -365,6 +365,17 @@ async function dataTab(body) {
     message.textContent = "✓ " + t("dataExported");
   }
 
+  // Diagnostics for a bug report: shown in full so the parent sees what would be shared, and copied if the window allows.
+  const diagBox = el("div", { class: "reset-box" });
+  async function showDiagnostics() {
+    const { body: data } = await api("/api/parent/diagnostics");
+    const area = el("textarea", { class: "diag-text", readonly: "readonly", rows: "10", "aria-label": t("dataDiag") }, data.text);
+    const note = el("p", { class: "muted" }, t("dataDiagHint"));
+    diagBox.replaceChildren(area, note);
+    area.select();
+    try { await navigator.clipboard.writeText(data.text); note.textContent = "✓ " + t("dataDiagCopied"); } catch (e) { /* the parent can still copy it by hand */ }
+  }
+
   // Both deletions ask for the PIN again (section 6.4); a wrong one leaves everything as it was.
   function askDelete(box, question, yes, path, confirm, onDone) {
     const pin = pinConfirmField();
@@ -418,6 +429,8 @@ async function dataTab(body) {
   body.replaceChildren(
     el("p", {}, "🔒 " + t("dataWhere")),
     el("div", { class: "row" }, el("button", { class: "big-btn blue small-btn", onclick: exportBackup }, "💾 " + t("dataExport")), message),
+    el("div", { class: "row" }, el("button", { class: "big-btn blue small-btn", onclick: showDiagnostics }, "🩺 " + t("dataDiag"))),
+    diagBox,
     el("div", { class: "row" }, el("button", { class: "big-btn blue small-btn", onclick: () => fileInput.click() }, "📂 " + t("dataRestore")), fileInput),
     restoreBox,
     el("div", { class: "row" }, el("button", { class: "big-btn small-btn danger", onclick: askReset }, "🗑️ " + t("dataReset"))),

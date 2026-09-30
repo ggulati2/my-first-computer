@@ -24,11 +24,14 @@ def check_pin(pin: str, stored: str) -> bool:
 
 
 class PinGuard:
-    def __init__(self, pin: str | None = None, max_failures: int = 5, lockout_seconds: int = 30, stored: str | None = None):
+    def __init__(self, pin: str | None = None, max_failures: int = 5, lockout_seconds: int = 30, stored: str | None = None,
+                 max_lockout_seconds: int = 900):
         # Either a plain PIN (tests, the .env PIN) or an already hashed one from the database.
         self._stored = stored or (hash_pin(pin) if pin else None)
         self._max_failures = max_failures
         self._lockout_seconds = lockout_seconds
+        self._max_lockout_seconds = max_lockout_seconds
+        self._lockouts = 0   # lockouts since the last right PIN: each one lasts twice as long as the one before
         self._failures = 0
         self._locked_until = 0.0
         self._tokens: set[str] = set()
@@ -51,19 +54,23 @@ class PinGuard:
         """Return a new token if the PIN is right, otherwise None.
 
         After several wrong tries we pause for a while, so a curious child
-        cannot just guess all 10,000 combinations.
+        cannot just guess all 10,000 combinations. Every further lockout doubles (30 s, 1 min, 2 min, ... up to
+        15 min) until a right PIN resets it, so patient guessing does not get anywhere either.
         """
         if self.seconds_locked() > 0 or self._stored is None:
             return None
         if check_pin(pin, self._stored):
             self._failures = 0
+            self._lockouts = 0
             token = secrets.token_urlsafe(24)
             self._tokens.add(token)
             return token
         self._failures += 1
         if self._failures >= self._max_failures:
             self._failures = 0
-            self._locked_until = time.monotonic() + self._lockout_seconds
+            wait = min(self._lockout_seconds * 2 ** self._lockouts, self._max_lockout_seconds)
+            self._lockouts += 1
+            self._locked_until = time.monotonic() + wait
         return None
 
     def forget(self) -> None:
@@ -71,6 +78,7 @@ class PinGuard:
         self._stored = None
         self._tokens.clear()
         self._failures = 0
+        self._lockouts = 0
 
     def is_valid_token(self, token: str | None) -> bool:
         return bool(token) and token in self._tokens

@@ -8,10 +8,12 @@ When the parent chooses "Exit" the server stops and the window closes.
 """
 import os
 import shutil
+import json
 import subprocess
 import sys
 import threading
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -56,24 +58,38 @@ def find_browser() -> str | None:
     return None
 
 
+def who_answers() -> str | None:
+    """"keybo" if Keybo's server answers on our port, "other" if some other program does, None if nobody does.
+    Another program (or another user on a shared computer) could hold the port first; we must not open its page."""
+    try:
+        with urllib.request.urlopen(URL + "api/health", timeout=1) as reply:  # nosec B310 - URL is built from the fixed local host and port, never from input
+            return "keybo" if json.load(reply).get("app") == "keybo" else "other"
+    except urllib.error.HTTPError:
+        return "other"
+    except (OSError, ValueError, AttributeError):
+        # A refused connection means nobody listens; anything that answers but is not our JSON is "other".
+        return None if _port_free() else "other"
+
+
+def _port_free() -> bool:
+    import socket
+    with socket.socket() as probe:
+        probe.settimeout(0.5)
+        return probe.connect_ex((HOST, PORT)) != 0
+
+
 def wait_until_ready(timeout: float = 15) -> bool:
     end = time.time() + timeout
     while time.time() < end:
-        try:
-            urllib.request.urlopen(URL, timeout=1)  # nosec B310 - URL is built from the fixed local host and port, never from input
+        if who_answers() == "keybo":
             return True
-        except Exception:
-            time.sleep(0.2)
+        time.sleep(0.2)
     return False
 
 
 def already_running() -> bool:
     """True if Keybo's server already answers (for example the parent double-clicked twice)."""
-    try:
-        urllib.request.urlopen(URL, timeout=1)  # nosec B310 - URL is built from the fixed local host and port, never from input
-        return True
-    except Exception:
-        return False
+    return who_answers() == "keybo"
 
 
 def native_window():
@@ -136,6 +152,9 @@ def open_kiosk(server=None):
 
 def main() -> None:
     webview = native_window()
+    if who_answers() == "other":
+        print(f"Port {PORT} is used by another program, so Keybo cannot start. Close that program and try again.")
+        sys.exit(1)
     if already_running():
         print("Keybo is already running. Opening it again.")
         if webview:

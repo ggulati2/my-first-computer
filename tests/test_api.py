@@ -377,3 +377,15 @@ def test_left_handed_mouse_setting(client):
     headers = parent_headers(client)
     assert client.get("/api/settings").json()["left_handed"] is False
     assert client.post("/api/parent/settings", json={"left_handed": True}, headers=headers).json()["left_handed"] is True
+
+
+def test_diagnostics_have_the_version_and_log_but_nothing_about_the_child(tmp_path):
+    from pathlib import Path
+
+    from backend import diagnostics
+    from backend.config import HOME_DIR
+    status = {"mode": "off", "key_set": False, "consent": False, "last_error": "", "requests": 0, "cap": 45}
+    text = diagnostics.report(status, 2, "en")
+    assert diagnostics.version() in text and "Last lines of the log" in text
+    assert str(HOME_DIR) not in diagnostics._hide_paths(f"error in {HOME_DIR}/data/app.db")
+    assert str(Path.home()) not in diagnostics._hide_paths(f"{Path.home()}/x")

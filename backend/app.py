@@ -5,6 +5,7 @@ It serves the frontend files and a few small JSON endpoints under /api.
 """
 import json
 import logging
+import logging.handlers
 import os
 import threading
 from typing import Annotated
@@ -16,7 +17,7 @@ from pydantic import BaseModel, Field
 
 from datetime import date
 
-from backend import bank, dashboard, db, difficulty, languages, progress, restore, summary
+from backend import bank, dashboard, db, diagnostics, difficulty, languages, progress, restore, summary
 from backend.config import FRONTEND_DIR, LOG_DIR, MISSING_KEY, PORT, load_settings
 from backend.content import ContentService
 from backend.llm.client import LLMClient
@@ -28,7 +29,9 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    handlers=[logging.FileHandler(LOG_DIR / "app.log", encoding="utf-8"), logging.StreamHandler()],
+    # Rotating: about 3 MB at most (3 old files of 1 MB), so a family's disk never fills up with logs.
+    handlers=[logging.handlers.RotatingFileHandler(LOG_DIR / "app.log", maxBytes=1_000_000, backupCount=3, encoding="utf-8"),
+              logging.StreamHandler()],
 )
 log = logging.getLogger("app")
 
@@ -154,6 +157,11 @@ def create_app() -> FastAPI:
         for number in ("session_minutes", "daily_limit_minutes"):
             out[number] = int(stored.get(number) or 0)
         return out
+
+    @app.get("/api/health")
+    def health():
+        """Lets the launcher tell Keybo apart from some other program that holds the port (scripts/launch.py)."""
+        return {"app": "keybo"}
 
     @app.get("/api/languages")
     def list_languages():
@@ -524,6 +532,11 @@ def create_app() -> FastAPI:
     @app.get("/api/parent/status")
     def parent_status(_parent: None = Depends(parent_only)):
         return llm.status()
+
+    @app.get("/api/parent/diagnostics")
+    def parent_diagnostics(_parent: None = Depends(parent_only)):
+        """Version, system and the end of the log, with nothing about the child, to paste into a bug report."""
+        return {"text": diagnostics.report(llm.status(), len(family.list()), content.language())}
 
     @app.post("/api/parent/llm/test")
     def test_llm(_parent: None = Depends(parent_only)):
