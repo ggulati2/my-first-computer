@@ -4,7 +4,7 @@
 # CI pipeline has to pass before one is merged. (Their own dependencies, such as starlette,
 # are chosen by pip within the ranges these packages allow.)
 fastapi==0.141.1
-uvicorn==0.53.0
+uvicorn==0.54.0
 pydantic==2.13.5
 httpx==0.28.1
 jsonschema==4.26.0
