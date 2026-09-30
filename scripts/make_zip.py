@@ -15,7 +15,7 @@ LEFT_OUT = ("tests/", "scripts/try_models.py", "scripts/make_zip.py", "scripts/c
             "scripts/setup-dev.sh", "scripts/check_zip.sh", "scripts/release_notes.sh", ".githooks/", ".github/", ".gitignore", ".gitattributes", ".editorconfig",
             "CONTRIBUTING.md", "CHANGELOG.md", "SECURITY.md", "pytest.ini", "packaging/", "scripts/build_mac.sh",
             "requirements-build.txt", "requirements-perf.txt", "requirements-security.txt", "scripts/loadtest.py", "windows/", "scripts/make_voice.py", "scripts/make_voice_cloud.py", "scripts/fetch_emoji.py",
-            ".pre-commit-config.yaml", "ruff.toml", "requirements.lock", "scripts/lock.sh", "CODE_OF_CONDUCT.md")
+            ".pre-commit-config.yaml", "ruff.toml", "requirements.lock", "scripts/lock.sh", "CODE_OF_CONDUCT.md", "docs/screenshots/")
 SECRET = re.compile(rb"sk-or-[A-Za-z0-9_-]{20,}")
 
 

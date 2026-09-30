@@ -4,6 +4,9 @@ All notable changes to Keybo. Format: [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Added
+- README: a short demo GIF and screenshots (the screenshots are not part of the downloadable zip).
+
 ## [0.1.0] - 2026-09-30
 
 The first public release of Keybo: a computer-readiness app for children aged 5 to 7, offline and private by design.
