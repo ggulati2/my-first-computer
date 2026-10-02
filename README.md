@@ -162,6 +162,7 @@ Then set `LLM_MODE=openrouter` in `.env`. Never commit a key.
 - [CONTRIBUTING.md](CONTRIBUTING.md): workflow, commit messages, tests, the lockfile
 - [docs/DESIGN.md](docs/DESIGN.md): what the app is for and the rules it follows
 - [docs/BUILD.md](docs/BUILD.md): building the Mac, Windows and Linux apps, and releases
+- [docs/CODE_SIGNING.md](docs/CODE_SIGNING.md): how the Windows files are signed, and who approves it
 - [SECURITY.md](SECURITY.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) · [TEST-CHECKLIST.md](TEST-CHECKLIST.md)
 
 ---
