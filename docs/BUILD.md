@@ -33,6 +33,28 @@ PyInstaller can only build for the system (and processor) it runs on, which is w
 
 A test build without a release: Actions tab → pick a workflow → "Run workflow". Its files are kept for 14 days.
 
+## Microsoft Store (MSIX)
+
+The Store wants an `.msix` package, not the Inno Setup installer. `windows/build_msix.ps1` packs the PyInstaller folder
+into `dist\Keybo-<version>-windows-x64.msix` (CI does it in `windows-app.yml` and keeps it 30 days as the artifact
+`msix-windows-<version>`; it is deliberately not attached to the GitHub release). It must run on Windows (it needs
+`makeappx.exe` from the Windows SDK, which the CI runner has).
+
+1. In [Partner Center](https://partner.microsoft.com/dashboard) reserve the name "Keybo", then open
+   Product management → Product identity and copy three values.
+2. In the GitHub repository, Settings → Secrets and variables → Actions → **Variables**, add:
+   `MSIX_IDENTITY_NAME` (Package/Identity/Name), `MSIX_PUBLISHER` (Package/Identity/Publisher, starts with `CN=`) and
+   `MSIX_PUBLISHER_DISPLAY_NAME`. Without them the package gets a test identity that the Store rejects.
+3. Run the "Windows app" workflow (or push a release tag), download the `msix-windows-<version>` artifact and upload the
+   `.msix` in the Store submission under Packages. Do not sign it: the Store signs it.
+
+Things to know: the package asks for `runFullTrust` (any packaged desktop program does; say so in the certification
+notes). The package version is `<VERSION>.0`; the Store keeps the last number for itself, so every Store update needs a
+higher `VERSION`. Inside the package Windows redirects writes to `%APPDATA%\Keybo` into the package's own data folder:
+progress survives updates but is removed when the Store version is uninstalled, and it is separate from a data folder
+made by the Inno Setup version. The Store also needs a privacy policy URL (use the one for `docs/PRIVACY.md`), age
+rating answers and screenshots. The logos in `windows/msix/Assets` come from `packaging/app.icns`.
+
 ## How a built app is tested
 
 - **Smoke test** (every build, in CI): `packaging/smoke_mac.sh <path to the app's program>` (Mac and Linux) or

@@ -72,6 +72,20 @@ jobs:
           $un = Start-Process -FilePath (Join-Path $target "unins000.exe") -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES" -Wait -PassThru
           if ($un.ExitCode -ne 0) { throw "The uninstaller failed" }
 
+      - name: Build the Microsoft Store package (MSIX, unsigned, the Store signs it)
+        shell: pwsh
+        env:
+          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+        run: windows/build_msix.ps1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          # Not named "app-*", so the release workflow does not attach it to GitHub.
+          name: msix-windows-${{ env.APP_VERSION }}
+          path: dist/Keybo-*-windows-x64.msix
+          retention-days: 30
+
       - name: Portable zip and checksums
         shell: pwsh
         run: |
