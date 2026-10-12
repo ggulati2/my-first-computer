@@ -94,10 +94,11 @@ function levelAddUp(done) {
 }
 
 // ---------- 3 and 5. Type numbers (the shared typing game with the number pad) ----------
-function typeNumbers(done, screen, icon, text, numbers) {
+// `whole`: say the number as a number ("twenty"); otherwise a row of digits is read one by one ("1 2 3").
+function typeNumbers(done, screen, icon, text, numbers, whole = false) {
   typingRound({
     screen, icon, text, numpad: true, onDone: done,
-    items: numbers.map((n) => ({ text: n, speak: [...n].join(" ") })),   // "1 2 3": read digit by digit
+    items: numbers.map((n) => ({ text: n, speak: whole ? n : [...n].join(" ") })),
   });
 }
 
@@ -106,7 +107,7 @@ function levelNumbersInOrder(done) {
 }
 
 function levelBigNumbers(done) {
-  typeNumbers(done, "nums-5", "🔟", t("nums.big"), ["10", "12", "15", "18", "20"]);
+  typeNumbers(done, "nums-5", "🔟", t("nums.big"), ["10", "12", "15", "18", "20"], true);   // "twenty", not "two zero"
 }
 
 // ---------- 6. Count down and blast off ----------

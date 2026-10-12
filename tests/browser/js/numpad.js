@@ -44,6 +44,20 @@ T.run(async () => {
   press(first, "Numpad" + first); await T.wait(200);
   T.check("typing games accept the pad", document.querySelectorAll(".slot.typed").length === 1);
 
+  // Big numbers are said as numbers ("twenty"), a row of digits is said digit by digit.
+  const said = [], realSpeak = window.speak;
+  window.speak = (text) => { said.push(text); return realSpeak(text); };
+  const shown = () => [...document.querySelectorAll(".slot")].map((slot) => slot.textContent).join("");
+  const typeItem = async (digits) => { for (const d of digits) { press(d, "Numpad" + d); await T.wait(150); } await T.wait(400); };
+  await openLevel(5);
+  await typeItem(shown());
+  T.check("a big number is read as a whole number, not digit by digit", said.some((x) => /^\d\d$/.test(x)) && !said.some((x) => /^\d \d$/.test(x)), JSON.stringify(said));
+  said.length = 0;
+  await openLevel(3);
+  await typeItem(shown());
+  T.check("a row of digits is still read one by one", said.some((x) => /^\d \d \d$/.test(x)), JSON.stringify(said));
+  window.speak = realSpeak;
+
   // Letters and other screens are not affected.
   openWorld("letters"); await T.wait(400); [...document.querySelectorAll(".world.level")][0].click(); await T.wait(400);
   const letter = T.goalKey();
