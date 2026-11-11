@@ -1,6 +1,6 @@
 # For developers: everything Keybo needs plus the test tools.
 -r requirements.txt
-pytest==9.1.1
-regex==2026.9.10   # only for scripts/fetch_emoji.py (correctly groups multi-character emoji like flags)
-uv==0.12.21   # only for scripts/lock.sh (the hashed lockfile, requirements.lock)
-ruff==0.16.9   # the lint check in CI (the pre-commit hook pins the same version)
+pytest==9.2.0
+regex==2026.11.7   # only for scripts/fetch_emoji.py (correctly groups multi-character emoji like flags)
+uv==0.13.7   # only for scripts/lock.sh (the hashed lockfile, requirements.lock)
+ruff==0.17.4   # the lint check in CI (the pre-commit hook pins the same version)
